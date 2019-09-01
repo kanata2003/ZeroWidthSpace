@@ -10,6 +10,7 @@ Unicode steganography tool using zero-width space. Unicodeゼロ幅スペース�
 $ git clone https://github.com/kanata2003/ZeroWidthSpace
 $ cd ZeroWidthSpace
 $ chmod u+x zws
+$ cp zws /usr/local/bin/zws
 ```
 
 ## Usage
@@ -20,14 +21,14 @@ Like base64 command.
 
 ```bash
 $ echo unko > file
-$ ./zws file
+$ zws file
 '‌⁢‌‌​​‍‍‌‍⁢‍​​‍‍‌‍‍⁢​​‍‍‌‍⁢⁢​​‍‍'
 ```
 
 or
 
 ```bash
-$ echo "unko"|./zws
+$ echo "unko"|zws
 '‌⁢‌‌​​‍‍‌‍⁢‍​​‍‍‌‍‍⁢​​‍‍‌‍⁢⁢​​‍‍'
 ```
 
@@ -38,14 +39,14 @@ $ echo "unko"|./zws
 ```bash
 $ cat file
 this is a pen‌⁢‌‌​​‍‍‌‍⁢‍​​‍‍‌‍‍⁢​​‍‍‌‍⁢⁢​​‍‍
-$ ./zws -d file
+$ zws -d file
 unko
 ```
 
 or
 
 ```bash
-$ echo '‌⁢‌‌​​‍‍‌‍⁢‍​​‍‍‌‍‍⁢​​‍‍‌‍⁢⁢​​‍‍'|./zws -d
+$ echo '‌⁢‌‌​​‍‍‌‍⁢‍​​‍‍‌‍‍⁢​​‍‍‌‍⁢⁢​​‍‍'|zws -d
 unko
 ```
 
