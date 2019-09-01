@@ -1,0 +1,74 @@
+#!/bin/bash
+
+ZWS1=$'\u200b'
+ZWS2=$'\u200c'
+ZWS3=$'\u200d'
+ZWS4=$'\u2062'
+
+help(){
+  echo "Zero width space encode or decode from standard input to standard output."
+  echo "zws [OPTION] [STRINGS]"
+  echo "  -d : decode data"
+}
+
+encode(){
+  CONTENT="$1"
+  if echo "$CONTENT" |grep "^ *$" >/dev/null;then help;exit 1;fi
+
+  LENGTH_CHECK=`echo $CONTENT|xxd -p|tr -d '\n'|tr a-z A-Z|sed 's/^/obase=4; ibase=16; &/g'|echo $(cat -)|bc \
+    |sed s/0/$ZWS1/g \
+    |sed s/1/$ZWS2/g \
+    |sed s/2/$ZWS3/g \
+    |sed s/3/$ZWS4/g \
+    | tr -d '\\\n'|wc -m`
+  if [ $LENGTH_CHECK -gt 281 ]
+  then
+    echo "[WARN] This encoded size over 280 characters. You can not tweet. Now ${LENGTH_CHECK} characters."
+  fi
+
+  printf "'"
+    echo $CONTENT|xxd -p|tr -d '\n'|tr a-z A-Z|sed 's/^/obase=4; ibase=16; &/g'|echo $(cat -)|bc \
+    |sed s/0/$ZWS1/g \
+    |sed s/1/$ZWS2/g \
+    |sed s/2/$ZWS3/g \
+    |sed s/3/$ZWS4/g \
+    | tr -d '\\\n'
+  echo "'"
+}
+
+decode(){
+  CONTENT=$(echo "$1"|sed s/[^$ZWS1$ZWS2$ZWS3$ZWS4]//g )
+  #printf "'"
+  echo $CONTENT \
+    |sed s/$ZWS1/0/g \
+    |sed s/$ZWS2/1/g \
+    |sed s/$ZWS3/2/g \
+    |sed s/$ZWS4/3/g \
+    |sed 's/^/obase=16; ibase=4; &/g'|bc|xxd -ps -r|tr -d '\n'
+  #echo "'"
+  echo
+}
+
+if echo "$@" |grep -e '^-h' -e '^-H' -e '^--help' >/dev/null
+then
+  help
+  exit 0
+fi
+
+if echo "$1" |grep -e '^-d' -e '^-D' >/dev/null
+then
+  if [ -p /dev/stdin ] ; then
+    decode "$(cat -)"
+  else
+    decode "$2 $3 $4 $5 $6 $7 $8 $9"
+  fi
+  exit 0
+fi
+
+if [ -p /dev/stdin ] ; then
+  encode "$(cat -)"
+else
+  encode "$1 $2 $3 $4 $5 $6 $7 $8 $9"
+fi
+
+exit 0
