@@ -14,6 +14,8 @@ $ chmod u+x zws
 
 ## Usage
 
+Like base64 command.
+
 ### Encode
 
 ```bash
