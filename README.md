@@ -48,3 +48,10 @@ or
 $ echo '‌⁢‌‌​​‍‍‌‍⁢‍​​‍‍‌‍‍⁢​​‍‍‌‍⁢⁢​​‍‍'|./zws -d
 unko
 ```
+
+# Author
+
+[@kanata2003](https://twitter.com/kanata201612)
+
+# Special thanks
+
