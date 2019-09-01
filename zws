@@ -1,74 +1,104 @@
 #!/bin/bash
 
-ZWS1=$'\u200b'
-ZWS2=$'\u200c'
-ZWS3=$'\u200d'
-ZWS4=$'\u2062'
+ZWS0=$'\u200b'
+ZWS1=$'\u200c'
+ZWS2=$'\u200d'
+ZWS3=$'\u2062'
+
+ZWS_HEX=(
+  $ZWS0$ZWS0
+  $ZWS0$ZWS1
+  $ZWS0$ZWS2
+  $ZWS0$ZWS3
+  $ZWS1$ZWS0
+  $ZWS1$ZWS1
+  $ZWS1$ZWS2
+  $ZWS1$ZWS3
+  $ZWS2$ZWS0
+  $ZWS2$ZWS1
+  $ZWS2$ZWS2
+  $ZWS2$ZWS3
+  $ZWS3$ZWS0
+  $ZWS3$ZWS1
+  $ZWS3$ZWS2
+  $ZWS3$ZWS3
+)
 
 help(){
-  echo "Zero width space encode or decode from standard input to standard output."
-  echo "zws [OPTION] [STRINGS]"
+  echo "Usage: $0 [OPTION] [FILE]"
+  echo "Zero width space encode or decode FILE, or standard input to standard output."
+  echo "With no FILE, or when FILE is -, read standard input."
   echo "  -d : decode data"
+  #echo "  -t : "
+  echo "  -h : display this help and exit"
 }
 
+
 encode(){
-  CONTENT="$1"
-  if echo "$CONTENT" |grep "^ *$" >/dev/null;then help;exit 1;fi
-
-  LENGTH_CHECK=`echo $CONTENT|xxd -p|tr -d '\n'|tr a-z A-Z|sed 's/^/obase=4; ibase=16; &/g'|echo $(cat -)|bc \
-    |sed s/0/$ZWS1/g \
-    |sed s/1/$ZWS2/g \
-    |sed s/2/$ZWS3/g \
-    |sed s/3/$ZWS4/g \
-    | tr -d '\\\n'|wc -m`
-  if [ $LENGTH_CHECK -gt 281 ]
-  then
-    echo "[WARN] This encoded size over 280 characters. You can not tweet. Now ${LENGTH_CHECK} characters."
-  fi
-
-  printf "'"
-    echo $CONTENT|xxd -p|tr -d '\n'|tr a-z A-Z|sed 's/^/obase=4; ibase=16; &/g'|echo $(cat -)|bc \
-    |sed s/0/$ZWS1/g \
-    |sed s/1/$ZWS2/g \
-    |sed s/2/$ZWS3/g \
-    |sed s/3/$ZWS4/g \
-    | tr -d '\\\n'
+  echo -n "'"
+  cat "$1" |\
+  xxd -p |\
+  tr -d '\n' |\
+  sed "
+    s/0/${ZWS_HEX[0x0]}/g;
+    s/1/${ZWS_HEX[0x1]}/g;
+    s/2/${ZWS_HEX[0x2]}/g;
+    s/3/${ZWS_HEX[0x3]}/g;
+    s/4/${ZWS_HEX[0x4]}/g;
+    s/5/${ZWS_HEX[0x5]}/g;
+    s/6/${ZWS_HEX[0x6]}/g;
+    s/7/${ZWS_HEX[0x7]}/g;
+    s/8/${ZWS_HEX[0x8]}/g;
+    s/9/${ZWS_HEX[0x9]}/g;
+    s/a/${ZWS_HEX[0xa]}/g;
+    s/b/${ZWS_HEX[0xb]}/g;
+    s/c/${ZWS_HEX[0xc]}/g;
+    s/d/${ZWS_HEX[0xd]}/g;
+    s/e/${ZWS_HEX[0xe]}/g;
+    s/f/${ZWS_HEX[0xf]}/g"
   echo "'"
 }
 
 decode(){
-  CONTENT=$(echo "$1"|sed s/[^$ZWS1$ZWS2$ZWS3$ZWS4]//g )
-  #printf "'"
-  echo $CONTENT \
-    |sed s/$ZWS1/0/g \
-    |sed s/$ZWS2/1/g \
-    |sed s/$ZWS3/2/g \
-    |sed s/$ZWS4/3/g \
-    |sed 's/^/obase=16; ibase=4; &/g'|bc|xxd -ps -r|tr -d '\n'
-  #echo "'"
-  echo
+  cat "$1" |\
+  sed -z "s/[^$ZWS0$ZWS1$ZWS2$ZWS3]//g" |\
+  sed "s/../& /g" |\
+  sed "
+    s/${ZWS_HEX[0x0]}/0/g;
+    s/${ZWS_HEX[0x1]}/1/g;
+    s/${ZWS_HEX[0x2]}/2/g;
+    s/${ZWS_HEX[0x3]}/3/g;
+    s/${ZWS_HEX[0x4]}/4/g;
+    s/${ZWS_HEX[0x5]}/5/g;
+    s/${ZWS_HEX[0x6]}/6/g;
+    s/${ZWS_HEX[0x7]}/7/g;
+    s/${ZWS_HEX[0x8]}/8/g;
+    s/${ZWS_HEX[0x9]}/9/g;
+    s/${ZWS_HEX[0xa]}/a/g;
+    s/${ZWS_HEX[0xb]}/b/g;
+    s/${ZWS_HEX[0xc]}/c/g;
+    s/${ZWS_HEX[0xd]}/d/g;
+    s/${ZWS_HEX[0xe]}/e/g;
+    s/${ZWS_HEX[0xf]}/f/g" |\
+  xxd -p -r
 }
 
-if echo "$@" |grep -e '^-h' -e '^-H' -e '^--help' >/dev/null
-then
-  help
-  exit 0
-fi
+MODE="ENCODE"
+FILE="-"
 
-if echo "$1" |grep -e '^-d' -e '^-D' >/dev/null
-then
-  if [ -p /dev/stdin ] ; then
-    decode "$(cat -)"
-  else
-    decode "$2 $3 $4 $5 $6 $7 $8 $9"
-  fi
-  exit 0
-fi
+for arg in $@;do
+  case "$arg" in
+    "-h"|"--help") help;exit 0;;
+    "-d"|"--decode") MODE="DECODE";;
+    *) FILE="$arg";;
+  esac
+done
 
-if [ -p /dev/stdin ] ; then
-  encode "$(cat -)"
+
+if [ "$MODE" = "DECODE" ] ; then
+  decode "$FILE"
 else
-  encode "$1 $2 $3 $4 $5 $6 $7 $8 $9"
+  encode "$FILE"
 fi
 
 exit 0
