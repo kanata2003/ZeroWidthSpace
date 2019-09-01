@@ -19,6 +19,7 @@ Like base64 command.
 ### Encode
 
 ```bash
+$ echo unko > file
 $ ./zws file
 '‌⁢‌‌​​‍‍‌‍⁢‍​​‍‍‌‍‍⁢​​‍‍‌‍⁢⁢​​‍‍'
 ```
