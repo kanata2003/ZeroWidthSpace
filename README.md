@@ -50,9 +50,9 @@ $ echo '‌⁢‌‌​​‍‍‌‍⁢‍​​‍‍‌‍‍⁢​​‍‍
 unko
 ```
 
-## For Mac
+## For Mac(Macで動かしたい場合)
 
-To run on Mac, you need the following software.
+If you want to run on a Mac, you need the following software:
 
 * bash ver 4.2 or higher
 
