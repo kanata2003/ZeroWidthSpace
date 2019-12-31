@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ZWS0=$'\u200b'
 ZWS1=$'\u200c'
